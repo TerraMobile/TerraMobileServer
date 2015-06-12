@@ -31,6 +31,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 @Path("/projectservices")
 public class TerraWebService {
 
+	//Diretório dos arquivos gpkg
 	private static final String FILE_FOLDER = "/home/terrabrasilis/terramobile/";
 
 	@Path("/getlistfiles/{user}")
