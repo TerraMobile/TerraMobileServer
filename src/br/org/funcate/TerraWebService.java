@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,9 @@ import javax.ws.rs.core.Response;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataParam;
+
 import java.text.NumberFormat;
 
 import javax.ws.rs.core.MediaType;
@@ -32,7 +36,8 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 public class TerraWebService {
 
 	//Diretório dos arquivos gpkg
-	private static final String FILE_FOLDER = "/home/terrabrasilis/terramobile/";
+	private static final String DOWNLOAD_FILE_FOLDER = "/dados/projetos/BOEING/TerraMobileServerFilesDownload";
+	private static final String UPLOAD_FILE_FOLDER = "/dados/projetos/BOEING/TerraMobileServerFilesUpload";
 
 	@Path("/getlistfiles/{user}")
 	@GET
@@ -44,7 +49,7 @@ public class TerraWebService {
 		
 		try {
 			List<JSONObject> listGeopackage = new ArrayList<JSONObject>();
-			File folder = new File(FILE_FOLDER + user);
+			File folder = new File(DOWNLOAD_FILE_FOLDER + user);
 			File[] listOfFiles = folder.listFiles();
 
 			for (int i = 0; i < listOfFiles.length; i++) {
@@ -76,7 +81,7 @@ public class TerraWebService {
 		myFormat.setGroupingUsed(true);
 
 		//Pega arquivo
-		File file = new File(FILE_FOLDER + "/" + user + "/" + fileName);
+		File file = new File(DOWNLOAD_FILE_FOLDER + "/" + user + "/" + fileName);
 		if (file.exists()) {
 			ResponseBuilder builder = Response.ok(file);
 			builder.header("Content-Disposition", "attachment; filename="
@@ -91,11 +96,17 @@ public class TerraWebService {
 	
 	//Método ainda não finalizado
 	@POST
-	@Path("/setprojects/{user}")
+	@Path("/setprojects/{user}/{filename}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response setProjects(@PathParam("user") String user, String password, @PathParam("filename") String fileName) {	
+	public Response setProjects(@PathParam("user") String user, 
+			@FormDataParam("file") String password, 
+			@FormDataParam("file") InputStream is,
+            @FormDataParam("file") FormDataContentDisposition contentDispositionHeader)
+    {
+		
 		try {
-			saveFile(user);
+			String fileLocation = UPLOAD_FILE_FOLDER + user + contentDispositionHeader.getFileName();
+			saveFile(is, user);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -103,17 +114,17 @@ public class TerraWebService {
 		return null;
 	}
 	
-	private void saveFile(/*InputStream is,*/ String fileLocation) throws IOException {
-		File file = new File(FILE_FOLDER + fileLocation);
+	private void saveFile(InputStream is, String fileLocation) throws IOException {
+		File file = new File(fileLocation);
 		
 		if (!file.exists()) file.mkdir();
 		
 		OutputStream os = new FileOutputStream(file);
 		byte[] buffer = new byte[256];
 	    int bytes = 0;
-	    /*while ((bytes = is.read(buffer)) != -1) {
+	    while ((bytes = is.read(buffer)) != -1) {
 	        os.write(buffer, 0, bytes);
-	    }*/
+	    }
 	}
 
 }
