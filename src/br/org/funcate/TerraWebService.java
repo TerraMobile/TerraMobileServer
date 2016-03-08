@@ -36,8 +36,8 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 public class TerraWebService {
 
 	//Diretório dos arquivos gpkg
-	private static final String DOWNLOAD_FILE_FOLDER = "/dados/projetos/BOEING/TerraMobileServerFilesDownload";
-	private static final String UPLOAD_FILE_FOLDER = "/dados/projetos/BOEING/TerraMobileServerFilesUpload";
+	private static final String DOWNLOAD_FILE_FOLDER = "/dados/projetos/BOEING/TerraMobileServerFilesDownload/";
+	private static final String UPLOAD_FILE_FOLDER = "/dados/projetos/BOEING/TerraMobileServerFilesUpload/";
 
 	@Path("/getlistfiles/{user}")
 	@GET
@@ -52,14 +52,23 @@ public class TerraWebService {
 			File folder = new File(DOWNLOAD_FILE_FOLDER + user);
 			File[] listOfFiles = folder.listFiles();
 
-			for (int i = 0; i < listOfFiles.length; i++) {
-				if (listOfFiles[i].isFile()) {
-					JSONObject json = new JSONObject();
-					json.put("pkg", listOfFiles[i].getName());
-					listGeopackage.add(json);
-				}
-			}	
-			jsonObject.put("packages", listGeopackage); //tratar caso o a collection listOfFiles estiver vazia?
+			if(listOfFiles!=null)
+			{
+				for (int i = 0; i < listOfFiles.length; i++) {
+					if (listOfFiles[i].isFile()) {
+						JSONObject json = new JSONObject();
+						json.put("pkg", listOfFiles[i].getName());
+						listGeopackage.add(json);
+					}
+				}	
+				jsonObject.put("packages", listGeopackage); //tratar caso o a collection listOfFiles estiver vazia?
+			}
+			else
+			{
+				jsonObject.put("Exception", "Invalid server projects folder.");
+			}
+			
+			
 		} catch (Exception e) {
 			jsonObject.put("Exception", "Ocorreu um erro: " + e.getMessage());
 		} finally {
@@ -99,14 +108,15 @@ public class TerraWebService {
 	@Path("/setprojects/{user}/{filename}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response setProjects(@PathParam("user") String user, 
-			@FormDataParam("file") String password, 
+			@FormDataParam("password") String password, 
+			@FormDataParam("fileName") String fileName,
 			@FormDataParam("file") InputStream is,
             @FormDataParam("file") FormDataContentDisposition contentDispositionHeader)
     {
 		
 		try {
-			String fileLocation = UPLOAD_FILE_FOLDER + user + contentDispositionHeader.getFileName();
-			saveFile(is, user);
+			String fileLocation = UPLOAD_FILE_FOLDER + user;
+			saveFile(is, fileLocation, fileName);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -114,10 +124,20 @@ public class TerraWebService {
 		return null;
 	}
 	
-	private void saveFile(InputStream is, String fileLocation) throws IOException {
-		File file = new File(fileLocation);
+	private void saveFile(InputStream is, String fileLocation, String fileName) throws IOException {
+		File fileFolder = new File(fileLocation);
 		
-		if (!file.exists()) file.mkdir();
+		if (!fileFolder.exists())
+		{
+			fileFolder.mkdir();
+		}
+		
+		File file = new File(fileLocation+"/"+fileName);
+		
+		if (file.exists())
+		{
+			file.delete();
+		}		
 		
 		OutputStream os = new FileOutputStream(file);
 		byte[] buffer = new byte[256];
