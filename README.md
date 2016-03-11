@@ -36,3 +36,9 @@ To testing the server, use the following links on one browser.
  2 - http://<your server IP or name>/TerraMobileServer/tmserver/projectservices/getprojects/userName/<your Geopackage name>.gpkg
  
 The first link return the list of the Geopackages published on your TerraMobileServer instance and the second link allows download one package.
+
+To use it on Eclipse, use the maven command:
+
+mvn eclipse:eclipse -Dwtpversion=2.0
+
+This command will create Eclipse config files, them you will be able to import it to eclipse as an existing project.
