@@ -10,6 +10,7 @@ public class Project
 	private File file;
 	private String UUID;
 	private int status;
+	private String description;
 	
 	public Project(String fileName, InputStream is) {
 
@@ -66,6 +67,16 @@ public class Project
 	{
 	
 		this.status = status;
+	}
+	public String getDescription()
+	{
+	
+		return description;
+	}
+	public void setDescription(String description)
+	{
+	
+		this.description = description;
 	}
 	
 	

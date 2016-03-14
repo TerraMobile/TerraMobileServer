@@ -38,48 +38,55 @@ import com.sun.jersey.multipart.FormDataParam;
 @Path("/projectservices")
 public class TerraWebService {
 	
-	@Path("/getlistfiles/{user}")
-	@GET
+	@Path("/listprojects")
+	@POST
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces("application/json")
-	public Response getListOfFiles(@PathParam("user") String user, String password) throws JSONException {
-		
+	public Response listProjects(@FormDataParam("user") String user, @FormDataParam("password") String password, @FormDataParam("projectStatus") int projectStatus) throws JSONException {
+	
 		JSONObject jsonObject = new JSONObject();
-		String result;
 		
-		try {
-			List<JSONObject> listGeopackage = new ArrayList<JSONObject>();
-			File folder = new File(GlobalVariablesSingleton.getInstance().PROJECTS_FOLDER + user);
-			File[] listOfFiles = folder.listFiles();
+		List<JSONObject> listGeopackage = new ArrayList<JSONObject>();
 
-			if(listOfFiles!=null)
+		String result="";
+		
+		try
+		{
+			List<Project> projects = ProjectService.getProjectList(projectStatus);
+			
+			for (Project project : projects)
 			{
-				for (int i = 0; i < listOfFiles.length; i++) {
-					if (listOfFiles[i].isFile()) {
-						JSONObject json = new JSONObject();
-						json.put("pkg", listOfFiles[i].getName());
-						listGeopackage.add(json);
-					}
-				}	
-				jsonObject.put("packages", listGeopackage); //tratar caso o a collection listOfFiles estiver vazia?
-			}
-			else
-			{
-				jsonObject.put("Exception", "Invalid server projects folder.");
+				
+				if (project.getFile().exists())
+				{
+					JSONObject json = new JSONObject();
+					json.put("project_id", project.getUUID());
+					json.put("project_status", project.getStatus());
+					json.put("project_name", project.getFileName());
+					json.put("project_description", project.getDescription());
+					listGeopackage.add(json);
+				}
+					
+				jsonObject.put("projects", listGeopackage); //tratar caso o a collection listOfFiles estiver vazia?
+				
 			}
 			
-			
-		} catch (Exception e) {
-			jsonObject.put("Exception", "Ocorreu um erro: " + e.getMessage());
-		} finally {
-			result = jsonObject.toString();
+		} catch (TerraMobileServerException | ProjectException
+				| DatabaseException | DAOException e)
+		{
+			e.printStackTrace();
+			return Response.status(500).entity(e.getMessage()).build();
 		}
+			
+		result = jsonObject.toString();
+		
 		return Response.status(200).entity(result).build();
 	}
 
-	@GET
-	@Path("/getprojects/{user}/{filename}")
+	/*@POST
+	@Path("/getprojects")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response getProjects(@PathParam("user") String user, String password, @PathParam("filename") String fileName) throws FileNotFoundException, TerraMobileServerException {
+	public Response downloadProject(@FormDataParam("user") String user, @FormDataParam("password") String password, @FormDataParam("projectId") String projectId) throws FileNotFoundException, TerraMobileServerException {
 		return download(user, fileName);
 	}
 
@@ -99,7 +106,7 @@ public class TerraWebService {
 			throw new FileNotFoundException("File does not exist");
 		}
 		return response;
-	}
+	}*/
 	
 	
 	@POST

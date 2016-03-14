@@ -38,10 +38,13 @@ public class ProjectDAO
 			if (resultSet.next())
 			{
 				settingValue = resultSet.getString("value");
-			} else
+			}
+			/*else
+			}
 			{
 				throw new DAOException("Missing '"+key+"' setting");
-			}
+			}*/
+			
 
 		} catch (SQLException e)
 		{
@@ -94,5 +97,14 @@ public class ProjectDAO
 		
 		project.setStatus(projectStatusInt);
 		return projectStatusInt;
+	}
+	
+	public String getDescription() throws DAOException, DatabaseException, ProjectException
+	{
+
+		String projectStatus = getSetting("project_description");
+		
+		project.setDescription(projectStatus);
+		return projectStatus;
 	}
 }

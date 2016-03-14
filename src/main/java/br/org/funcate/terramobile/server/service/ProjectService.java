@@ -1,11 +1,16 @@
 package br.org.funcate.terramobile.server.service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import br.org.funcate.terramobile.server.model.DatabaseHelper;
 import br.org.funcate.terramobile.server.model.Project;
@@ -17,6 +22,9 @@ import br.org.funcate.terramobile.server.model.exception.TerraMobileServerExcept
 
 public class ProjectService
 {
+
+	private static final Logger logger= Logger.getLogger( ProjectService.class.getName() );
+	
 	private ProjectService()
 	{}
 	
@@ -112,5 +120,81 @@ public class ProjectService
 			projectFolder.mkdirs();
 		}
 		return projectFolder;
+	}
+
+	
+	/**
+	 * Iterate over project folders looking for project with the project status. File are stored on PROJECTS_FOLDER/PROJECT_ID/PROJECT_STATUS
+	 * @param projectStatus
+	 * @return
+	 * @throws TerraMobileServerException
+	 * @throws ProjectException 
+	 * @throws DatabaseException 
+	 * @throws DAOException 
+	 */
+	public static List<Project> getProjectList(int projectStatus) throws TerraMobileServerException, ProjectException, DatabaseException, DAOException 
+	{
+		List<Project> projects = new ArrayList<Project>();
+		
+		File appProjectFolder = new File(GlobalVariablesSingleton.getInstance().PROJECTS_FOLDER);
+		
+		File[] folders = appProjectFolder.listFiles();
+		
+		for (File projectFolder : folders)
+		{
+			File statusFolder = new File(projectFolder.getAbsolutePath()+"/"+projectStatus);
+			
+ 
+			if(!statusFolder.exists())
+			{
+				continue;
+			}
+			
+			File[] gpkgFiles = statusFolder.listFiles();
+			
+			for (File projectGpkg : gpkgFiles)
+			{
+				Project project;
+				try
+				{
+					project = new Project(projectGpkg.getName(), new FileInputStream(projectGpkg));
+					project.setFile(new File(projectGpkg.getAbsolutePath()));
+					
+				} catch (FileNotFoundException e)
+				{
+					throw new ProjectException("Invalid project file: " + projectGpkg.getName(), e);
+				}
+				DatabaseHelper helper = new DatabaseHelper(projectGpkg.getAbsolutePath());
+				
+				ProjectDAO dao = new ProjectDAO(project, helper);
+				
+				dao.getUUID();
+				
+				dao.getStatus();
+				
+				dao.getDescription();
+
+				if(project.getDescription()==null)
+				{
+					project.setDescription("");
+				}
+			
+				helper.close();
+				
+				if(project.getStatus()!=projectStatus)
+				{
+					logger.log(Level.WARNING, "File in the wrong folder, file: " + projectGpkg.getAbsolutePath() + ". Project Status: " + projectStatus + ". Status Folder: " + project.getStatus());
+					continue;
+				}
+				
+				projects.add(project);
+				
+			}
+			
+			
+		}
+		
+		return projects;
+		
 	}
 }
