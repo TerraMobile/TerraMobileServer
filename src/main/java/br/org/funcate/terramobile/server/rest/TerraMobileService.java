@@ -36,13 +36,13 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
 @Path("/projectservices")
-public class TerraWebService {
+public class TerraMobileService {
 	
 	@Path("/listprojects")
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces("application/json")
-	public Response listProjects(@FormDataParam("user") String user, @FormDataParam("password") String password, @FormDataParam("projectStatus") int projectStatus) throws JSONException {
+	public Response listProjects(@FormDataParam("user") String user, @FormDataParam("password") String password, @FormDataParam("projectStatus") int projectStatus) {
 	
 		JSONObject jsonObject = new JSONObject();
 		
@@ -83,30 +83,48 @@ public class TerraWebService {
 		return Response.status(200).entity(result).build();
 	}
 
-	/*@POST
-	@Path("/getprojects")
+	@POST
+	@Path("/downloadproject")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadProject(@FormDataParam("user") String user, @FormDataParam("password") String password, @FormDataParam("projectId") String projectId) throws FileNotFoundException, TerraMobileServerException {
-		return download(user, fileName);
+	public Response downloadProject(@FormDataParam("user") String user, 
+			@FormDataParam("password") String password, 
+			@FormDataParam("projectId") String projectId,
+			@FormDataParam("projectStatus") int projectStatus,
+			@FormDataParam("projectName") String projectName) {
+
+		
+		Response response=null;
+		try
+		{
+		
+			Project project = new Project(projectName, null);
+			
+			project.setStatus(projectStatus);
+			
+			project.setUUID(projectId);
+			
+			project = ProjectService.getProject(project);
+			
+			ResponseBuilder builder = Response.status(200).entity(project.getFile());
+			
+			builder.header("Content-Disposition", "attachment; filename="
+					+ project.getFile().getName());
+			
+			response = builder.build();
+		
+		} catch (ProjectException | TerraMobileServerException e)
+		{
+			e.printStackTrace();
+			return Response.status(500).entity(e.getMessage()).build();
+		}
+		
+		return response;		
 	}
 
-	private Response download(String user, String fileName) throws FileNotFoundException, TerraMobileServerException {
-		Response response = null;
-		NumberFormat myFormat = NumberFormat.getInstance();
-		myFormat.setGroupingUsed(true);
+	
 
-		//Pega arquivo
-		File file = new File(GlobalVariablesSingleton.getInstance().PROJECTS_FOLDER + "/" + user + "/" + fileName);
-		if (file.exists()) {
-			ResponseBuilder builder = Response.ok(file);
-			builder.header("Content-Disposition", "attachment; filename="
-					+ file.getName());
-			response = builder.build();
-		} else {
-			throw new FileNotFoundException("File does not exist");
-		}
-		return response;
-	}*/
+	
 	
 	
 	@POST
@@ -116,14 +134,14 @@ public class TerraWebService {
 			@FormDataParam("password") String password, 
 			@FormDataParam("fileName") String fileName,
 			@FormDataParam("file") InputStream is,
-            @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) throws TerraMobileServerException
+            @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) 
     {
 		try {
 			Project project = new Project(fileName, is);
 		
 			ProjectService.saveProject(project, user);
 			
-		} catch (ProjectException | DatabaseException | DAOException e) {
+		} catch (ProjectException | DatabaseException | DAOException | TerraMobileServerException e) {
 			e.printStackTrace();
 			return Response.status(500).entity(e.getMessage()).build();
 		}

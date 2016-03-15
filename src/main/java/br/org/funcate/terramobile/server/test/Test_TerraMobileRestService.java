@@ -4,20 +4,23 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
@@ -26,6 +29,8 @@ import org.junit.Test;
 
 public class Test_TerraMobileRestService
 {
+	
+	private static final String serviceURL = "http://localhost:8080/TerraMobileServer/projectservices/";
 
 	@Test
 	public void test_uploadNewProject() throws URISyntaxException
@@ -33,9 +38,9 @@ public class Test_TerraMobileRestService
 
 		File fileGPKG = new File(Test_TerraMobileRestService.class.getResource(
 				"/newProject.gpkg").toURI());
-		String url = "http://localhost:8080/TerraMobileServer/tmserver/projectservices/uploadproject";
+		String url = serviceURL+"uploadproject";
 
-		HttpResponse response = null;
+		HttpEntity entity = null;
 
 		try
 		{
@@ -48,7 +53,7 @@ public class Test_TerraMobileRestService
 
 			parameters.put("password", "password");
 
-			response = sendPost(fileGPKG, url, parameters.entrySet());
+			entity = sendPost(fileGPKG, url, parameters.entrySet());
 			
 		} catch (ClientProtocolException e)
 		{
@@ -58,9 +63,7 @@ public class Test_TerraMobileRestService
 			fail(e.getMessage());
 		}
 
-		assertFalse(response == null);
-
-		assertTrue(response.getStatusLine().getStatusCode() == 200);
+		assertFalse(entity == null);
 
 	}
 
@@ -70,9 +73,9 @@ public class Test_TerraMobileRestService
 
 		File fileGPKG = new File(Test_TerraMobileRestService.class.getResource(
 				"/gatheredProject.gpkg").toURI());
-		String url = "http://localhost:8080/TerraMobileServer/tmserver/projectservices/uploadproject";
+		String url = serviceURL+"uploadproject";
 
-		HttpResponse response = null;
+		HttpEntity entity = null;
 
 		try
 		{
@@ -84,7 +87,7 @@ public class Test_TerraMobileRestService
 
 			parameters.put("password", "password");
 
-			response = sendPost(fileGPKG, url, parameters.entrySet());
+			entity = sendPost(fileGPKG, url, parameters.entrySet());
 		} catch (ClientProtocolException e)
 		{
 			fail(e.getMessage());
@@ -93,18 +96,16 @@ public class Test_TerraMobileRestService
 			fail(e.getMessage());
 		}
 
-		assertFalse(response == null);
+		assertFalse(entity == null);
 
-		assertTrue(response.getStatusLine().getStatusCode() == 200);
 	}
 
 	@Test
 	public void test_listNewProjects() throws URISyntaxException
 	{
 
-		String url = "http://localhost:8080/TerraMobileServer/tmserver/projectservices/listprojects";
-
-		HttpResponse response = null;
+		String url = serviceURL+"listprojects";
+		HttpEntity entity = null;
 
 		try
 		{
@@ -114,9 +115,9 @@ public class Test_TerraMobileRestService
 
 			parameters.put("password", "password");
 
-			parameters.put("project_status", "0");
+			parameters.put("projectStatus", "0");
 
-			response = sendPost(null, url, parameters.entrySet());
+			entity = sendPost(null, url, parameters.entrySet());
 
 		} catch (ClientProtocolException e)
 		{
@@ -126,34 +127,45 @@ public class Test_TerraMobileRestService
 			fail(e.getMessage());
 		}
 		
-		String expectedJSON = "{\"projects\":[{\"project_name\":\"newProject.gpkg\",\"project_status\":0,\"project_id\":\"10201203129123\",\"project_description\":\"\"}]}";
+		
 
-		assertFalse(response == null);
-
-		assertTrue(response.getStatusLine().getStatusCode() == 200);
-		
-		String content=null;
-		try
-		{
-			content = getStringFromInputStream(response.getEntity().getContent());
-		} catch (UnsupportedOperationException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
-		System.out.println(content);
-		
-		assertTrue(content==expectedJSON);
+		assertFalse(entity == null);
 
 	}
+	
+	@Test
+	public void test_listGatheredProjects() throws URISyntaxException
+	{
 
-	public HttpResponse sendPost(File file, String url,
+		String url = serviceURL+"listprojects";
+
+		HttpEntity entity = null;
+
+		try
+		{
+			HashMap<String, String> parameters = new HashMap<String, String>();
+
+			parameters.put("user", "userName");
+
+			parameters.put("password", "password");
+
+			parameters.put("projectStatus", "1");
+
+			entity = sendPost(null, url, parameters.entrySet());
+
+		} catch (ClientProtocolException e)
+		{
+			fail(e.getMessage());
+		} catch (IOException e)
+		{
+			fail(e.getMessage());
+		}
+		
+		assertFalse(entity == null);
+		
+	}
+	
+	public HttpEntity sendPost(File file, String url,
 			Collection<Entry<String, String>> parameters)
 			throws ClientProtocolException, IOException
 	{
@@ -185,32 +197,98 @@ public class Test_TerraMobileRestService
 		httppost.setEntity(reqEntity);
 
 		HttpResponse response = httpclient.execute(httppost);
+		
+		assertTrue(response.getStatusLine().getStatusCode() == 200);
+		
+		HttpEntity entity = response.getEntity();
+		
+		ContentType contentType = ContentType.getOrDefault(entity);
 
-		/*
-		 * HttpEntity resEntity = response.getEntity();
-		 * 
-		 * System.out.println(":"+response.getAllHeaders());
-		 * 
-		 * System.out.println(":"+response.getStatusLine());
-		 */
-
-		return response;
+		return entity;
 	}
 	
-	private String getStringFromInputStream(InputStream inputStream) throws IOException
+	private String getStringFromInputStream(InputStream inputStream, String encoding) throws IOException
 	{
-		String output="";
-	
-		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream)); 
-
-		while(br.ready())
-		{ 
-			output += br.readLine(); 
-		    //line has the contents returned by the inputStream 
-		}
 		
+		String body = IOUtils.toString(inputStream, encoding);
+		
+		return body.trim();
+	}
 	
-		return output;
+	@Test
+	public void test_dowloadNewProject() throws URISyntaxException
+	{
+
+		String url = serviceURL+"downloadproject";
+
+		HttpEntity entity = null;
+
+		try
+		{
+			HashMap<String, String> parameters = new HashMap<String, String>();
+
+			parameters.put("user", "userName");
+
+			parameters.put("password", "password");
+
+			parameters.put("projectStatus", "0");
+			
+			parameters.put("projectName", "newProject.gpkg");
+			
+			parameters.put("projectId", "10201203129123");
+
+			entity = sendPost(null, url, parameters.entrySet());
+			
+			assertFalse(entity == null);
+			
+			assertFalse(entity.getContent()==null);
+
+		} catch (ClientProtocolException e)
+		{
+			fail(e.getMessage());
+		} catch (IOException e)
+		{
+			fail(e.getMessage());
+		}
+	
+	}
+	
+	@Test
+	public void test_dowloadGatheredProject() throws URISyntaxException
+	{
+
+		String url = serviceURL+"downloadproject";
+
+		HttpEntity entity = null;
+
+		try
+		{
+			HashMap<String, String> parameters = new HashMap<String, String>();
+
+			parameters.put("user", "userName");
+
+			parameters.put("password", "password");
+
+			parameters.put("projectStatus", "1");
+			
+			parameters.put("projectName", "gatheredProject.gpkg");
+			
+			parameters.put("projectId", "10201203129123");
+
+			entity = sendPost(null, url, parameters.entrySet());
+			
+			assertFalse(entity == null);
+			
+			assertFalse(entity.getContent()==null);
+
+		} catch (ClientProtocolException e)
+		{
+			fail(e.getMessage());
+		} catch (IOException e)
+		{
+			fail(e.getMessage());
+		}
+	
 	}
 
 }

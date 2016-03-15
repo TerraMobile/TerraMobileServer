@@ -4,6 +4,11 @@ public class ProjectException extends Exception {
 
 	private static final long serialVersionUID = 5398324537531733587L;
 
+	
+	public ProjectException(String message)
+	{
+		super(message);
+	}
 	public ProjectException(String message, Throwable e)
 	{
 		super(message, e);

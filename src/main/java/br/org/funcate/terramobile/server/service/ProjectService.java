@@ -197,4 +197,18 @@ public class ProjectService
 		return projects;
 		
 	}
+	
+	public static Project getProject(Project project) throws TerraMobileServerException, ProjectException
+	{
+		File projectFile = new File(GlobalVariablesSingleton.getInstance().PROJECTS_FOLDER+"/"+project.getUUID()+"/"+project.getStatus()+"/"+project.getFileName());
+		
+		if(!projectFile.exists())
+		{
+			throw new ProjectException("Unable to find requested project, UUID: " + project.getUUID() + ", Status: " + project.getStatus() + ", Name: " + project.getFileName() + ", Absolute Path: " + projectFile.getAbsolutePath());
+		}
+		
+		project.setFile(projectFile);
+	
+		return project;
+	}
 }
