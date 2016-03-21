@@ -4,24 +4,18 @@ package br.org.funcate.terramobile.server.rest;
  * @author Funcate
  */
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import br.org.funcate.terramobile.server.model.Project;
@@ -29,7 +23,6 @@ import br.org.funcate.terramobile.server.model.exception.DAOException;
 import br.org.funcate.terramobile.server.model.exception.DatabaseException;
 import br.org.funcate.terramobile.server.model.exception.ProjectException;
 import br.org.funcate.terramobile.server.model.exception.TerraMobileServerException;
-import br.org.funcate.terramobile.server.service.GlobalVariablesSingleton;
 import br.org.funcate.terramobile.server.service.ProjectService;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
@@ -137,6 +130,11 @@ public class TerraMobileService {
             @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) 
     {
 		try {
+			if(fileName==null || fileName=="" || fileName=="null")
+			{
+				return Response.status(500).entity("Missing or empty 'fileName' parameter.").build();
+			}
+						
 			Project project = new Project(fileName, is);
 		
 			ProjectService.saveProject(project, user);
