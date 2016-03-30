@@ -31,20 +31,7 @@ Needed one step:
 
  3 - Apply write permission to your apache tomcat user in directory created as instructed in the second step.
 
-To testing the server, is needed making a HTTP request in POST mode.
-Can use one online page to create and test it using the parameters as follows.
-
-URL to get a list of projects stored on server:
-http://<your domain or IP>/TerraMobileServer/projectservices/listprojects
-
-Attributes to make a valid POST HTTP request:
-user=userName
-password=password
-projectStatus=0
-
-Example page tool:
-- https://www.hurl.it/
-- http://requestmaker.com/
+To testing the server, run junit test.
 
 Build a develop project:
 ---------------------------------------------------------
