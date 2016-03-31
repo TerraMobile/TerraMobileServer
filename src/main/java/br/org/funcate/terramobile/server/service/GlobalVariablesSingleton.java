@@ -10,6 +10,7 @@ public class GlobalVariablesSingleton
 	//Diretório dos arquivos gpkg
 	public final String TERRAMOBILE_HOME= "/opt/TerraMobileServer";
 	public final String PROJECTS_FOLDER=TERRAMOBILE_HOME+"/projects";
+	public final String BACKUP_FOLDER=TERRAMOBILE_HOME+"/backup";
 
 	
 	private GlobalVariablesSingleton() throws TerraMobileServerException
@@ -54,6 +55,10 @@ public class GlobalVariablesSingleton
 
 		File projectFolders = new File(this.PROJECTS_FOLDER);
 		projectFolders.mkdirs();
+		
+		File backupFolders = new File(this.BACKUP_FOLDER);
+		backupFolders.mkdirs();
+		
 		
 	}
 }

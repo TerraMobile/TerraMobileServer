@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html">
+<head>
+    <title>Simple CRUD</title>
+    <style>
+    
+    .projectsTable
+    {
+    	border: 1px solid black;
+    	width: 750px;
+    }
+    .projectsTdCenter
+    {
+    	border: 1px solid black;
+    	text-align: center;
+    }
+    .projectsTdRight
+    {
+    	border: 1px solid black;
+    	text-align: right;
+    }
+    .projectsTable th
+    {
+    	border: 1px solid black;
+    	text-align: center;
+    }
+    .projectsTable td
+    {
+    	border: 1px solid black;
+    	text-align: center;
+    }
+    
+    </style>
+</head>
+    
+<body>
+    <h3>List projects</h3>
+    <h:form rendered="#{not empty adminManagedBean.list}">
+        <h:dataTable value="#{adminManagedBean.list}" var="item" styleClass="projectsTable" columnClasses="projectsTdCenter, projectsTdRight, projectsTdCenter">
+            <h:column><f:facet name="header">UUID</f:facet>#{item.UUID}</h:column>
+            <h:column><f:facet name="header">FileName</f:facet>#{item.fileName}</h:column>
+            <h:column><f:facet name="header" >Status</f:facet>#{item.status}</h:column>
+            <h:column>
+                <h:commandButton value="Delete" action="#{adminManagedBean.delete(item)}" onclick="return confirm('Are you sure deleting #{item.fileName}?');" >
+                </h:commandButton>
+            </h:column>
+        </h:dataTable>
+    </h:form>
+    
+
+</body>
+</html>

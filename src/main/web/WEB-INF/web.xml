@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
   <display-name>TerraMobileServer</display-name>
-  <welcome-file-list>
-    <welcome-file>index.html</welcome-file>
-    <welcome-file>index.htm</welcome-file>
-    <welcome-file>index.jsp</welcome-file>
-    <welcome-file>default.html</welcome-file>
-    <welcome-file>default.htm</welcome-file>
-    <welcome-file>default.jsp</welcome-file>
-  </welcome-file-list>
+
+     <!-- Configuração do Controlador TerraMobile Rest Servlet -->
   <servlet>
     <servlet-name>Jersey Web Application</servlet-name>
     <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
    <init-param>
 	    <param-name>com.sun.jersey.config.property.packages</param-name>
-	    <param-value>br.org.funcate</param-value>
+	    <param-value>br.org.funcate.terramobile.server.rest</param-value>
 	</init-param>
     <load-on-startup>1</load-on-startup>
     
@@ -22,6 +16,23 @@
   <servlet-mapping>
     <servlet-name>Jersey Web Application</servlet-name>
     <url-pattern>/*</url-pattern>
+    
   </servlet-mapping>
+  
+    <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+  
+   <!-- Configuração do Controlador TerraMobile Faces Servlet -->
+   <servlet>
+       <servlet-name>TerraMobile Server Faces Servlet</servlet-name>
+       <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+       <load-on-startup>1</load-on-startup>
+   </servlet>
+   <servlet-mapping>
+       <servlet-name>TerraMobile Server Faces Servlet</servlet-name>
+       <url-pattern>/admin/*</url-pattern>
+   </servlet-mapping>
+  
  
 </web-app>

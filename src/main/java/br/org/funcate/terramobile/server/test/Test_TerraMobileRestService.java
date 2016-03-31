@@ -30,7 +30,7 @@ import org.junit.Test;
 public class Test_TerraMobileRestService
 {
 	
-	private static final String serviceURL = "http://localhost:8080/TerraMobileServer/projectservices/";
+	private static final String serviceURL = "http://terrabrasilis.info/TerraMobileServer/projectservices/";
 
 	@Test
 	public void test_uploadNewProject() throws URISyntaxException
